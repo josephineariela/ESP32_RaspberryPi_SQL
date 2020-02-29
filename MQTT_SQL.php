@@ -1,6 +1,5 @@
 <?php
-/*Program to publish and subscribe data between SQL Database and CloudMQTT Server
-Created by: Josephine Ariella*/
+/*Program to publish and subscribe data between SQL Database and CloudMQTT Server*/
 
 class phpMQTT {
 
