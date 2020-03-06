@@ -451,7 +451,7 @@ if(!$mqtt->connect(true, NULL, $username, $password)) {
         die("Connection failed: " . $conn->connect_error);
     } 
         
-    $sql = "INSERT INTO OptimumData (temp, hum, moist, light) VALUES ('" . $msg_OptTemp . "', '" . $msg_OptHum . "', '" . $msg_OptMoist . "', '" . $msg_OptLight . "')";
+    $sql = "INSERT INTO `OptimumData` (`temp`, `hum`, `moist`, `light`) VALUES ('$msg_OptTemp', '$msg_OptHum', '$msg_OptMoist', '$msg_OptLight')";
         
     if ($conn->query($sql) === TRUE) {
         echo "New record created successfully";
