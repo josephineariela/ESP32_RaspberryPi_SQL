@@ -401,20 +401,24 @@ $password 	= "MP7TFv0i040Q";            	// set your password
 $client_id 	= "PHPPertama"; 				// make sure this is unique for connecting to sever - you could use uniqid()
 
 function procmsg($topic, $msg){
-
-	if ($topic = 'OptTemp'){
+	global $msg_OptTemp, $msg_OptHum, $msg_OptMoist, $msg_StartLight;
+	global $msg_heater, $msg_cooler;
+	if ($topic == 'OptTemp'){
 		$msg_OptTemp = $msg;
-		echo "OptTemp= ";
-		echo $msg_OptTemp;
+		// echo "OptTemp  ";
+		// echo $msg_OptTemp;
 	}
-	elseif ($topic = 'OptHum'){
+	elseif ($topic == 'OptHum'){
 		$msg_OptHum = $msg;
-		echo "OptHum= ";
-		echo $msg_OptHum;
+		// echo "OptHum = ";
+		// echo $msg_OptHum;
 	}
-	$msg_OptMoist = 89;
-	$msg_OptLight = 600;
-
+	elseif ($topic == 'OptMoist'){
+		$msg_OptMoist = $msg;
+		// echo "OptMoist = ";
+		// echo $msg_OptMoist;
+	}
+    $msg_StartLight = 600;
 }
 
 $mqtt = new phpMQTT($server, $port, $client_id);
@@ -429,41 +433,70 @@ if(!$mqtt->connect(true, NULL, $username, $password)) {
 	$topic_OptHum['OptHum'] = array(
 		"qos" => 0, 
 		"function" => "procmsg"
-	);
+    );
+	$topic_OptMoist['OptMoist'] = array(
+		"qos" => 0, 
+		"function" => "procmsg"
+    );
+	// $topic_StartLight['StartLight'] = array(
+	// 	"qos" => 0, 
+	// 	"function" => "procmsg"
+	// );	
+	// $topic_heater['heater'] = array(
+	// 	"qos" => 0, 
+	// 	"function" => "procmsg"
+    // );
+	// $topic_cooler['cooler'] = array(
+	// 	"qos" => 0, 
+	// 	"function" => "procmsg"
+    // );
 	
 	$mqtt->subscribe($topic_OptTemp, 0);
 	$mqtt->subscribe($topic_OptHum, 0);
+	$mqtt->subscribe($topic_OptMoist, 0);
+	// $mqtt->subscribe($topic_StartLight, 0);
+	// $mqtt->subscribe($topic_heater, 0);
+	// $mqtt->subscribe($topic_cooler, 0);
+
+	// // Create connection
+	// $conn = new mysqli($servername, $username, $password, $dbname);
+	// // Check connection
+	// if ($conn->connect_error) {
+	// 	die("Connection failed: " . $conn->connect_error);
+	// }	 
 	
-	while($mqtt->proc()){
-	//	break;
+	// $sql = "INSERT INTO OptimumData (temp, hum, moist, light) VALUES ('" . $msg_OptTemp . "', '" . $msg_OptHum . "', '" . $msg_OptMoist . "', '" . $msg_OptLight . "')";
+	
+	// if ($conn->query($sql) === TRUE) {
+	// 	echo "New record created successfully";
+	// } 
+	// else {
+	// 	echo "Error: " . $sql . "<br>" . $conn->error;
+	// }
+	// $conn->close();
+	
+	// if ($mqtt->proc(true)){
+	while ($mqtt->proc()){
+
+		echo "OptTemp = ";
+		echo $msg_OptTemp;
+		echo "<br>";
+
+		echo "OptHum = ";
+		echo $msg_OptHum;
+		echo "<br>";
+
+		echo "OptMoist = ";
+		echo $msg_OptMoist;
+		echo "<br>";
+
 	}
 	
-
-	$msg_OptHum = 89;
-	$msg_OptLight = 900;
-	$msg_OptMoist = 90;
-	$msg_OptTemp = 40;
-
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname);
-    // Check connection
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    } 
-        
-    $sql = "INSERT INTO `OptimumData` (`temp`, `hum`, `moist`, `light`) VALUES ('$msg_OptTemp', '$msg_OptHum', '$msg_OptMoist', '$msg_OptLight')";
-        
-    if ($conn->query($sql) === TRUE) {
-        echo "New record created successfully";
-    } 
-    else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
-    }
-    $conn->close();
-	
-	
-	$mqtt->close();
+    $mqtt->close();
+    
+       
 }
+?>
 
 
 
