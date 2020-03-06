@@ -1,5 +1,6 @@
 <?php
-/*Program to publish and subscribe data between SQL Database and CloudMQTT Server*/
+/*Program to publish and subscribe data between SQL Database and CloudMQTT Server
+Created by: Josephine Ariella*/
 
 class phpMQTT {
 
@@ -401,7 +402,7 @@ $client_id = "Growth_Chamber"; // make sure this is unique for connecting to sev
 
 //PHPmyAdmin Initialization
 $servername = "localhost";
-$dbname = "esp_data";
+$dbname = "Growth_Chamber";
 $username = "root";
 $password = "raspberry";
 
@@ -415,7 +416,7 @@ if ($conn->connect_error) {
 }   
 
 //Ambil data dari tabel database SensorData
-$sql = "SELECT id, sensor, temp, hum, moist, light, reading_time FROM SensorData ORDER BY id DESC";
+$sql = "SELECT id, temp, hum, moist, light, reading_time FROM ActualData ORDER BY id DESC";
 $mqtt = new phpMQTT($mqtt_server, $mqtt_port, $client_id);
 
 if ($mqtt->connect(true, NULL, $mqtt_id, $mqtt_pass)) {
@@ -430,6 +431,7 @@ if ($mqtt->connect(true, NULL, $mqtt_id, $mqtt_pass)) {
 			$mqtt->publish("ActHum", $row_hum, 0);
 			$mqtt->publish("ActMoist", $row_moist, 0);
 			$mqtt->publish("ActLight", $row_light, 0);
+			echo "sent";
 			
             $mqtt->close();
         }
@@ -439,22 +441,6 @@ if ($mqtt->connect(true, NULL, $mqtt_id, $mqtt_pass)) {
 } else {
     echo "Time out!\n";
 }
-
-// if ($mqtt->connect(true, NULL, $mqtt_id, $mqtt_pass)) {
-// 	$topics[$topic] = array(
-// 		"qos" => 0,
-// 		"function" => "procmsg"
-// 	);
-// 	$mqtt->subscribe("OptTemp",0);
-// 	while($mqtt->proc()){}
-// 	$mqtt->close();
-// }else
-// 	echo "Time out!\n";
-// }
-        
+     
 
 $conn->close();
-
-
-
-
