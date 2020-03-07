@@ -1,7 +1,7 @@
 /*Program for ESP-A
 Created by: Josephine Ariella*/
 
-//Update: tambah task get_SQL_data utk ambil data dari SQL
+//Update: add Task get_SQL_Data to get data from SQL Database
 
 
 //Global Library
@@ -80,13 +80,13 @@ dimmerLampESP32 dimmer(HEATER_PWM, HEATER_ZC);
 
 //Global Variable Initialization
 int i, end_ActTemp, end_ActHum, end_ActMoist, end_ActLight;
+int end_OptTemp, end_OptHum, end_OptMoist, end_OptLight;
 int j =0;
 float fActTemp, fActHum, fActMoist, fActLight;
+float fOptTemp, fOptHum, fOptMoist, fOptLight;
 char ActTemp[5], ActHum[5], ActMoist[5], ActLight[10];
+char OptTemp[5], OptHum[5], OptMoist[5], OptLight[10];
 
-    float OptTemp = 25;
-    float OptHum = 60;
-    float OptMoist = 60;
     int heaterDutyCycle = 0;
     long activeStart;
     char heaterS[8], coolerS[8], humidS[8], dehumidS[8], pumpS[8], lightS[8];
@@ -151,63 +151,88 @@ void get_SQL_data(void *pvParam){
       Serial.println(httpCode);
 
       //Getting data from SQL Database
-      String dataActual = http.getString();
-      Serial.println("Data Actual: " + dataActual);
+      String DataFromSQL = http.getString();
+      Serial.println("Data From SQL: " + DataFromSQL);
 
-      //Convert string data(dataActual) to array of char(charDataActual)
-      char charDataActual[dataActual.length()];
-      for (i = 0; i< sizeof(charDataActual); i++){
-        charDataActual[i] = dataActual[i];
-        if (charDataActual[i] == 'v'){ //partition for ActTemp Data is v
-          end_ActTemp = i;
-        }else if (charDataActual[i] == 'w'){ //partition for ActTemp Data is w
-          end_ActHum = i;
-        }else if (charDataActual[i] == 'x'){ //partition for ActTemp Data is x
-          end_ActMoist = i;
-        }else if (charDataActual[i] == 'y'){ //partition for ActTemp Data is y
-          end_ActLight = i;
-        }
+
+    //Convert string data(DataFromSQL) to array of char(charDataFromSQL)
+    char charDataFromSQL[DataFromSQL.length()];
+    for (i = 0; i< sizeof(charDataFromSQL); i++){
+      charDataFromSQL[i] = DataFromSQL[i];
+      if (charDataFromSQL[i] == 'v'){ //partition for ActTemp Data is v
+        end_ActTemp = i;
+      }else if (charDataFromSQL[i] == 'w'){ //partition for ActHum Data is w
+        end_ActHum = i;
+      }else if (charDataFromSQL[i] == 'x'){ //partition for ActMoist Data is x
+        end_ActMoist = i;
+      }else if (charDataFromSQL[i] == 'y'){ //partition for ActLight Data is y
+        end_ActLight = i;
+      }else if (charDataFromSQL[i] == 'a'){ //partition for OptTemp Data is a
+        end_OptTemp = i;
+      }else if (charDataFromSQL[i] == 'b'){ //partition for OptHum Data is b
+        end_OptHum = i;
+      }else if (charDataFromSQL[i] == 'c'){ //partition for OptMoist Data is c
+        end_OptMoist = i;
+      }else if (charDataFromSQL[i] == 'd'){ //partition for OptLight Data is d
+        end_OptLight = i;
       }
+    }
 
-      //Convert array of char(charDataActual) to float for each parameters
+      //Convert array of char(charDataFromSQL) to float for each parameters
       for (i=0; i<end_ActTemp; i++){
-        ActTemp[j] = charDataActual[i];
+        ActTemp[j] = charDataFromSQL[i];
         j++;
       }
       fActTemp = atof(ActTemp);
-//      Serial.println();
-//      Serial.print("ActTemp = ");
-//      Serial.print(fActTemp);
       j=0;
 
       for (i=end_ActTemp+1; i<end_ActHum; i++){
-        ActHum[j] = charDataActual[i];
+        ActHum[j] = charDataFromSQL[i];
         j++;
       }
       fActHum = atof(ActHum);
-//      Serial.println();
-//      Serial.print("ActHum = ");
-//      Serial.print(fActHum);
       j=0;
 
       for (i=end_ActHum+1; i<end_ActMoist; i++){
-        ActMoist[j] = charDataActual[i];
+        ActMoist[j] = charDataFromSQL[i];
         j++;
       }
       fActMoist = atof(ActMoist);
-//      Serial.println();
-//      Serial.print("ActMoist = ");
-//      Serial.print(fActMoist);
       j=0;
 
       for (i=end_ActMoist+1; i<end_ActLight; i++){
-        ActLight[j] = charDataActual[i];
+        ActLight[j] = charDataFromSQL[i];
         j++;
       }
       fActLight = atof(ActLight);
-//      Serial.println();
-//      Serial.print("ActLight = ");
-//      Serial.print(fActLight);
+      j=0;
+
+      for (i=end_ActLight+1; i<end_OptTemp; i++){
+        OptTemp[j] = charDataFromSQL[i];
+        j++;
+      }
+      fOptTemp = atof(OptTemp);
+      j=0;
+
+      for (i=end_OptTemp+1; i<end_OptHum; i++){
+        OptHum[j] = charDataFromSQL[i];
+        j++;
+      }
+      fOptHum = atof(OptHum);
+      j=0;
+
+      for (i=end_OptHum+1; i<end_OptMoist; i++){
+        OptMoist[j] = charDataFromSQL[i];
+        j++;
+      }
+      fOptMoist = atof(OptMoist);
+      j=0;
+
+      for (i=end_OptMoist+1; i<end_OptLight; i++){
+        OptLight[j] = charDataFromSQL[i];
+        j++;
+      }
+      fOptLight = atof(OptLight);
       j=0;
 
       Serial.println();
@@ -361,6 +386,15 @@ void print_status(void *pvParam){
     Serial.print("ActLight = ");
     Serial.println(fActLight);
     Serial.println("-----------------");
+    Serial.print("OptTemp = ");
+    Serial.println(fOptTemp);
+    Serial.print("OptHum = ");
+    Serial.println(fOptHum);
+    Serial.print("OptMoist = ");
+    Serial.println(fOptMoist);      
+    Serial.print("OptLight = ");
+    Serial.println(fOptLight);
+    Serial.println("-----------------");
     
     vTaskDelay(3000);
   }
@@ -375,7 +409,7 @@ void temperature_control(){
         digitalWrite(KIPAS_HEATER,HIGH);
         digitalWrite(COOLER,LOW);
         digitalWrite(KIPAS_COOLER,LOW);
-        if (fActTemp >= OptTemp) {
+        if (fActTemp >= fOptTemp) {
           tempState = WAIT_TEMP;
         }
     }
@@ -386,10 +420,10 @@ void temperature_control(){
         digitalWrite(KIPAS_HEATER,LOW);
         digitalWrite(COOLER,LOW);
         digitalWrite(KIPAS_COOLER,LOW);
-        if((OptTemp - fActTemp)>= TEMP_THRESHOLD){
+        if((fOptTemp - fActTemp)>= TEMP_THRESHOLD){
           tempState = HEAT;
         }
-        else if((fActTemp - OptTemp)>= TEMP_THRESHOLD){
+        else if((fActTemp - fOptTemp)>= TEMP_THRESHOLD){
           tempState = COOL;
         }
     }
@@ -400,7 +434,7 @@ void temperature_control(){
         digitalWrite(KIPAS_HEATER,LOW);
         digitalWrite(COOLER,HIGH);
         digitalWrite(KIPAS_COOLER,HIGH);
-        if (fActTemp <= OptTemp){
+        if (fActTemp <= fOptTemp){
           tempState = WAIT_TEMP;
         }
     }
@@ -417,7 +451,7 @@ void humidity_control(){
         digitalWrite(HUMIDIFIER,HIGH);
         digitalWrite(DEHUMIDIFIER,LOW);
         digitalWrite(KIPAS_DEHUMIDIFIER,LOW);
-        if (fActHum >= OptHum) {
+        if (fActHum >= fOptHum) {
           humidState = WAIT_HUMID;
         }
     }
@@ -427,10 +461,10 @@ void humidity_control(){
         digitalWrite(HUMIDIFIER,LOW);
         digitalWrite(DEHUMIDIFIER,LOW);
         digitalWrite(KIPAS_DEHUMIDIFIER,LOW);
-        if((OptHum - fActHum)>= HUMID_THRESHOLD){
+        if((fOptHum - fActHum)>= HUMID_THRESHOLD){
           humidState = HUMID;
         }
-        else if((fActHum - OptHum)>= HUMID_THRESHOLD){
+        else if((fActHum - fOptHum)>= HUMID_THRESHOLD){
           humidState = DEHUMID;
         }
     }
@@ -440,7 +474,7 @@ void humidity_control(){
         digitalWrite(HUMID,LOW);
         digitalWrite(DEHUMIDIFIER,HIGH);
         digitalWrite(KIPAS_DEHUMIDIFIER,HIGH);
-        if (fActHum <= OptHum){
+        if (fActHum <= fOptHum){
           humidState = WAIT_HUMID;
         }
     }
@@ -465,7 +499,7 @@ void moisture_control(){
     else if (moistState == WAIT_MOIST) {
         pumpState = 0;
         digitalWrite(MICROPUMP,LOW);
-        if (((millis() - activeStart) >= (DELAY_WAIT * 1000)) && (fActMoist <= OptMoist)){
+        if (((millis() - activeStart) >= (DELAY_WAIT * 1000)) && (fActMoist <= fOptMoist)){
             moistState = PUMP_ON;
         }
     }
