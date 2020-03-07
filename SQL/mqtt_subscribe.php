@@ -394,10 +394,10 @@ $username = "root";
 $password = "raspberry";
 $api_key_value = "tPmAT5Ab3j7F9";
 
-$server 	= "tailor.cloudmqtt.com";    	// change if necessary
-$port 		= 14131;                     	// change if necessary
-$username 	= "hhaqsitb";                	// set your username
-$password 	= "MP7TFv0i040Q";            	// set your password
+$mqtt_server 	= "tailor.cloudmqtt.com";    	// change if necessary
+$mqtt_port 		= 14131;                     	// change if necessary
+$mqtt_username 	= "hhaqsitb";                	// set your username
+$mqtt_password 	= "MP7TFv0i040Q";            	// set your password
 $client_id 	= "PHPPertama"; 				// make sure this is unique for connecting to sever - you could use uniqid()
 
 function procmsg($topic, $msg){
@@ -405,25 +405,32 @@ function procmsg($topic, $msg){
 	global $msg_heater, $msg_cooler;
 	if ($topic == 'OptTemp'){
 		$msg_OptTemp = $msg;
-		// echo "OptTemp  ";
-		// echo $msg_OptTemp;
-	}
-	elseif ($topic == 'OptHum'){
+	}elseif ($topic == 'OptHum'){
 		$msg_OptHum = $msg;
-		// echo "OptHum = ";
-		// echo $msg_OptHum;
-	}
-	elseif ($topic == 'OptMoist'){
+	}elseif ($topic == 'OptMoist'){
 		$msg_OptMoist = $msg;
-		// echo "OptMoist = ";
-		// echo $msg_OptMoist;
+	}elseif ($topic == 'StartLight'){
+		$msg_StartLight = $msg;
+	}elseif ($topic == 'heater'){
+		$msg_heater = $msg;
+	}elseif ($topic == 'cooler'){
+		$msg_cooler = $msg;
+	}elseif ($topic == 'humidifier'){
+		$msg_humidifier = $msg;
+	}elseif ($topic == 'dehumidifier'){
+		$msg_dehumidifier = $msg;
+	}elseif ($topic == 'moisture'){
+		$msg_pump = $msg;
+	}elseif ($topic == 'light'){
+		$msg_light = $msg;
 	}
-    $msg_StartLight = 600;
+
+	time.sleep(20);
 }
 
-$mqtt = new phpMQTT($server, $port, $client_id);
+$mqtt = new phpMQTT($mqtt_server, $mqtt_port, $client_id);
 
-if(!$mqtt->connect(true, NULL, $username, $password)) {
+if(!$mqtt->connect(true, NULL, $mqtt_username, $mqtt_password)) {
 	exit(1);
 }else {
 	$topic_OptTemp['OptTemp'] = array(
@@ -438,57 +445,94 @@ if(!$mqtt->connect(true, NULL, $username, $password)) {
 		"qos" => 0, 
 		"function" => "procmsg"
     );
-	// $topic_StartLight['StartLight'] = array(
-	// 	"qos" => 0, 
-	// 	"function" => "procmsg"
-	// );	
-	// $topic_heater['heater'] = array(
-	// 	"qos" => 0, 
-	// 	"function" => "procmsg"
-    // );
-	// $topic_cooler['cooler'] = array(
-	// 	"qos" => 0, 
-	// 	"function" => "procmsg"
-    // );
+	$topic_StartLight['StartLight'] = array(
+		"qos" => 0, 
+		"function" => "procmsg"
+	);	
+
+	$topic_heater['heater'] = array(
+		"qos" => 0, 
+		"function" => "procmsg"
+    );
+	$topic_cooler['cooler'] = array(
+		"qos" => 0, 
+		"function" => "procmsg"
+    );
+	$topic_humidifier['humidifier'] = array(
+		"qos" => 0, 
+		"function" => "procmsg"
+    );
+	$topic_dehumidifier['dehumidifier'] = array(
+		"qos" => 0, 
+		"function" => "procmsg"
+    );
+	$topic_pump['moisture'] = array(
+		"qos" => 0, 
+		"function" => "procmsg"
+    );
+	$topic_light['light'] = array(
+		"qos" => 0, 
+		"function" => "procmsg"
+    );
 	
 	$mqtt->subscribe($topic_OptTemp, 0);
 	$mqtt->subscribe($topic_OptHum, 0);
 	$mqtt->subscribe($topic_OptMoist, 0);
-	// $mqtt->subscribe($topic_StartLight, 0);
-	// $mqtt->subscribe($topic_heater, 0);
-	// $mqtt->subscribe($topic_cooler, 0);
+	$mqtt->subscribe($topic_StartLight, 0);
 
-	// // Create connection
-	// $conn = new mysqli($servername, $username, $password, $dbname);
-	// // Check connection
-	// if ($conn->connect_error) {
-	// 	die("Connection failed: " . $conn->connect_error);
-	// }	 
-	
-	// $sql = "INSERT INTO OptimumData (temp, hum, moist, light) VALUES ('" . $msg_OptTemp . "', '" . $msg_OptHum . "', '" . $msg_OptMoist . "', '" . $msg_OptLight . "')";
-	
-	// if ($conn->query($sql) === TRUE) {
-	// 	echo "New record created successfully";
-	// } 
-	// else {
-	// 	echo "Error: " . $sql . "<br>" . $conn->error;
-	// }
-	// $conn->close();
+	$mqtt->subscribe($topic_heater, 0);
+	$mqtt->subscribe($topic_cooler, 0);
+	$mqtt->subscribe($topic_humidifier, 0);
+	$mqtt->subscribe($topic_dehumidifier, 0);
+	$mqtt->subscribe($topic_pump, 0);
+	$mqtt->subscribe($topic_light, 0);
 	
 	// if ($mqtt->proc(true)){
 	while ($mqtt->proc()){
 
-		echo "OptTemp = ";
-		echo $msg_OptTemp;
+		echo "OptTemp = " . $msg_OptTemp . "<br>";
+		echo "OptHum = " . $msg_OptHum . "<br>";
+		echo "OptMoist = " . $msg_OptMoist . "<br>";
+		echo "StartLight = " . $msg_StartLight . "<br>";
+		echo "Heater = " . $msg_heater . "<br>";
+		echo "Cooler = " . $msg_cooler . "<br>";
+		echo "Humidifier = " . $msg_humidifier . "<br>";
+		echo "Dehumidifier = " . $msg_dehumidifier . "<br>";
+		echo "Pump = " . $msg_pump . "<br>";
+		echo "Light = " . $msg_light . "<br>";
+
+		// Create connection
+		$conn = new mysqli($servername, $username, $password, $dbname);
+		// Check connection
+		if ($conn->connect_error) {
+			die("Connection failed: " . $conn->connect_error);
+		}	 
+	
+		$sqlOpt = "INSERT INTO OptimumData (temp, hum, moist, light) VALUES ('" . $msg_OptTemp . "', '" . $msg_OptHum . "', '" . $msg_OptMoist . "', '" . $msg_OptLight . "')";
+	
+		if ($conn->query($sqlOpt) === TRUE) {
+			echo "Optimum Data created successfully";
+		} 
+		else {
+			echo "Error: " . $sqlOpt . "<br>" . $conn->error;
+		}
+
 		echo "<br>";
 
-		echo "OptHum = ";
-		echo $msg_OptHum;
+		$sqlOpt = "DELETE FROM `OptimumData ` WHERE 1";
+
+		$sqlMan = "INSERT INTO ManualData (heater, cooler, humidifier, dehumidifier, pump, light) VALUES ('" . $msg_heater . "', '" . $msg_cooler . "', '" . $msg_humidifier . "', '" . $msg_dehumidifier . "', '" . $msg_pump . "', '" . $msg_light . "')";
+	
+		if ($conn->query($sqlMan) === TRUE) {
+			echo "Manual Data created successfully";
+		} 
+		else {
+			echo "Error: " . $sqlMan . "<br>" . $conn->error;
+		}
+
 		echo "<br>";
 
-		echo "OptMoist = ";
-		echo $msg_OptMoist;
-		echo "<br>";
+		$conn->close();
 
 	}
 	
