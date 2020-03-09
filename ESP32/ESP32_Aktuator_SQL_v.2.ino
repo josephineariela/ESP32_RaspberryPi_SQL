@@ -1,7 +1,7 @@
 /*Program for ESP-A
 Created by: Josephine Ariella*/
 
-//Update: add Task get_SQL_Data to get data from SQL Database
+//Update: tambah task get_SQL_data utk ambil data dari SQL, bisa post status aktuator di task print_status, tambah data manual di task get_SQL_data
 
 
 //Global Library
@@ -14,86 +14,98 @@ Created by: Josephine Ariella*/
 const char* ssid     = "pipino";
 const char* password = "cilukbaa";
 
-//Server & API Key identification
-const char* serverName = "http://192.168.43.159/SQL_toESP-A.php";
-String apiKeyValue = "tPmAT5Ab3j7F9";
+//Server SQL & API Key identification
+const char* server_fromSQL  = "http://192.168.43.159/SQL_toESP-A.php";
+const char* server_toSQL    = "http://192.168.43.159/ESP-A_toSQL.php";
+String apiKeyValue          = "tPmAT5Ab3j7F9";
 
 // Pin Definitions 
-    #define LED 5 
-    #define MICROPUMP 32
-    #define HEATER_PWM 36
-    #define HEATER_ZC 25
-    #define KIPAS_HEATER 33
-    #define COOLER 4
-    #define KIPAS_COOLER 14
-    #define DEHUMIDIFIER 13
-    #define KIPAS_DEHUMIDIFIER 26
-    #define HUMIDIFIER 21
+    #define LED                 5 
+    #define MICROPUMP           32
+    #define HEATER_PWM          36
+    #define HEATER_ZC           25
+    #define KIPAS_HEATER        33
+    #define COOLER              4
+//    #define KIPAS_COOLER        14    
+    #define KIPAS_COOLER        23
+    #define DEHUMIDIFIER        13
+    #define KIPAS_DEHUMIDIFIER  26
+    #define HUMIDIFIER          21
 
 //Enable-Disable Macro
     #define DISABLE 0
-    #define ENABLE 1
+    #define ENABLE  1
 
 //Heating-Cooling State
-    #define HEAT 0
+    #define HEAT      0
     #define WAIT_TEMP 1
-    #define COOL 2
+    #define COOL      2
 
 //Humidifying-Dehumidifying State
-    #define HUMID 0
+    #define HUMID      0
     #define WAIT_HUMID 1
-    #define DEHUMID 2
+    #define DEHUMID    2
 
 //Moisture State
-    #define PUMP_ON 0
-    #define WAIT_ON 1
+    #define PUMP_ON    0
+    #define WAIT_ON    1
     #define WAIT_MOIST 2
 
 //Light State
     #define LIGHT_OFF 0
-    #define LIGHT_ON 1
+    #define LIGHT_ON  1
     
 //Manual-On Control Flag
-    int F_HEATER = DISABLE;
-    int F_COOLER = DISABLE;
+    int F_HEATER  = DISABLE;
+    int F_COOLER  = DISABLE;
     int F_DEHUMID = DISABLE;
-    int F_HUMID = DISABLE;
-    int F_MOIST = DISABLE;
+    int F_HUMID   = DISABLE;
+    int F_MOIST   = DISABLE;
     int lightFlag;
 
 //State Declaration
-    int tempState = WAIT_TEMP;
-    int humidState = WAIT_HUMID;
-    int moistState = WAIT_MOIST;
-    int lightState = LIGHT_OFF;
-    int coolerState, heaterState, humidifierState, dehumidifierState, ledState, pumpState;
+    int tempState   = WAIT_TEMP;
+    int humidState  = WAIT_HUMID;
+    int moistState  = WAIT_MOIST;
+    int lightState  = LIGHT_OFF;
     
 //Global Variable & Macro
-    #define TEMP_THRESHOLD 1
-    #define HUMID_THRESHOLD 1
-    #define MOIST_THRESHOLD 1
-    #define DELAY_ON 10
+    #define TEMP_THRESHOLD      1
+    #define HUMID_THRESHOLD     1
+    #define MOIST_THRESHOLD     1
+    #define DELAY_ON            10
     #define DELAY_WAIT 30+DELAY_ON
 
+//Setting PWM properties
+    const int freq        = 50000;
+    const int ledChannel  = 0;
+    const int resolution  = 8;
+    int min_dutyCycle     = 0;
+    int max_dutyCycle     = 255;
     
-dimmerLampESP32 dimmer(HEATER_PWM, HEATER_ZC);
 
 //Global Variable Initialization
-int i, end_ActTemp, end_ActHum, end_ActMoist, end_ActLight;
-int end_OptTemp, end_OptHum, end_OptMoist, end_OptLight;
-int j =0;
-float fActTemp, fActHum, fActMoist, fActLight;
-float fOptTemp, fOptHum, fOptMoist, fOptLight;
-char ActTemp[5], ActHum[5], ActMoist[5], ActLight[10];
-char OptTemp[5], OptHum[5], OptMoist[5], OptLight[10];
-
+    //Variables for convert data (actual, optimal, manual) from SQL
+    int i, end_ActTemp, end_ActHum, end_ActMoist, end_ActLight;
+    int end_OptTemp, end_OptHum, end_OptMoist, end_OptLight;
+    int end_heater, end_cooler, end_humidifier, end_dehumidifier, end_pump, end_light;
+    int j = 0;
+    char ActTemp[5], ActHum[5], ActMoist[5], ActLight[10];
+    char OptTemp[5], OptHum[5], OptMoist[5], OptLight[10];
+    char heater_status[5], cooler_status[5], humidifier_status[5], dehumidifier_status[5], pump_status[5], light_status[5];
+    //Variables for Actual & Optimal datas in float & Manual datas in String
+    float fActTemp, fActHum, fActMoist, fActLight;
+    float fOptTemp, fOptHum, fOptMoist, fOptLight;
+    String scooler_status, sheater_status, shumidifier_status, sdehumidifier_status, spump_status, slight_status;
+    //Variable for manual data in int (send to SQL database) as feedback from ESP-A to Interface
+    int coolerState, heaterState, humidifierState, dehumidifierState, ledState, pumpState;
+    //Variables & Declaration for Heater Driver
+    dimmerLampESP32 dimmer(HEATER_PWM, HEATER_ZC);
     int heaterDutyCycle = 0;
     long activeStart;
-    char heaterS[8], coolerS[8], humidS[8], dehumidS[8], pumpS[8], lightS[8];
-    char tStr2[8], hStr2[8], mStr2[8], lStr2[8];
-    String cooler_status, heater_status, humid_status, dehumid_status, pump_status, light_status;
+    //char tStr2[8], hStr2[8], mStr2[8], lStr2[8];
 
-//Task Priority
+//Task Priority for RTOS
 #define priorityTask1 6 //LED
 #define priorityTask2 5 //Temperature
 #define priorityTask3 4 //Humidity
@@ -107,10 +119,15 @@ void setup() {
   pinMode(MICROPUMP, OUTPUT);
   pinMode(KIPAS_HEATER, OUTPUT);
   pinMode(COOLER, OUTPUT);
-  pinMode(KIPAS_COOLER, OUTPUT);
+//  pinMode(KIPAS_COOLER, OUTPUT);
   pinMode(DEHUMIDIFIER, OUTPUT);
   pinMode(KIPAS_DEHUMIDIFIER, OUTPUT);
   pinMode(HUMIDIFIER, OUTPUT);
+
+  
+  // configure LED PWM functionalitites
+  ledcSetup(ledChannel, freq, resolution);
+  ledcAttachPin(KIPAS_COOLER, ledChannel);
   
   WiFi.begin(ssid, password);
   Serial.println("Connecting");
@@ -122,7 +139,6 @@ void setup() {
   Serial.print("Connected to WiFi network with IP Address: ");
   Serial.println(WiFi.localIP());
 
-  
   dimmer.begin(NORMAL_MODE, ON);
 
   xTaskCreatePinnedToCore( lightTask , "Task 1" , 2048 , NULL , priorityTask1 , NULL , 1);
@@ -143,7 +159,7 @@ void get_SQL_data(void *pvParam){
      //Check WiFi connection status
     if(WiFi.status()== WL_CONNECTED){
       HTTPClient http;
-      http.begin(serverName);
+      http.begin(server_fromSQL);
     
       //Getting the response code
       int httpCode = http.GET();
@@ -175,7 +191,20 @@ void get_SQL_data(void *pvParam){
         end_OptMoist = i;
       }else if (charDataFromSQL[i] == 'd'){ //partition for OptLight Data is d
         end_OptLight = i;
+      }else if (charDataFromSQL[i] == 'g'){ //partition for heater_status Data is g
+        end_heater = i;
+      }else if (charDataFromSQL[i] == 'h'){ //partition for cooler_status Data is h
+        end_cooler = i;
+      }else if (charDataFromSQL[i] == 'i'){ //partition for humidifier_status Data is i
+        end_humidifier = i;
+      }else if (charDataFromSQL[i] == 'j'){ //partition for dehumidifier_status Data is j
+        end_dehumidifier = i;
+      }else if (charDataFromSQL[i] == 'k'){ //partition for pump_status Data is k
+        end_pump = i;
+      }else if (charDataFromSQL[i] == 'l'){ //partition for light_status Data is l
+        end_light = i;
       }
+       
     }
 
       //Convert array of char(charDataFromSQL) to float for each parameters
@@ -235,7 +264,84 @@ void get_SQL_data(void *pvParam){
       fOptLight = atof(OptLight);
       j=0;
 
+      for (i=end_OptLight+1; i<end_heater; i++){
+        heater_status[j] = charDataFromSQL[i];
+        j++;
+      }
+      sheater_status = (String)heater_status;
+      j=0;
+      
+      for (i=end_heater+1; i<end_cooler; i++){
+        cooler_status[j] = charDataFromSQL[i];
+        j++;
+      }
+      scooler_status = (String)cooler_status;
+      j=0;
+      
+      for (i=end_cooler+1; i<end_humidifier; i++){
+        humidifier_status[j] = charDataFromSQL[i];
+        j++;
+      }
+      shumidifier_status = (String)humidifier_status;
+      j=0;
+      
+      for (i=end_humidifier+1; i<end_dehumidifier; i++){
+        dehumidifier_status[j] = charDataFromSQL[i];
+        j++;
+      }
+      sdehumidifier_status = (String)dehumidifier_status;
+      j=0;
+      
+      for (i=end_dehumidifier+1; i<end_pump; i++){
+        pump_status[j] = charDataFromSQL[i];
+        j++;
+      }
+      spump_status = (String)pump_status;
+      j=0;
+      
+      for (i=end_pump+1; i<end_light; i++){
+        light_status[j] = charDataFromSQL[i];
+        j++;
+      }
+      slight_status = (String)light_status;
+      j=0;
+      
       Serial.println();
+      //Declaring status of actuators
+      if (sheater_status = "ON"){
+        F_HEATER = ENABLE;
+        F_COOLER = DISABLE;
+      }else{
+        F_HEATER = DISABLE;
+      }
+      if (scooler_status == "ON") {
+        F_HEATER = DISABLE;
+        F_COOLER = ENABLE;
+      }else{
+        F_COOLER = DISABLE;
+      }
+      if (shumidifier_status = "ON"){
+        F_HUMID = ENABLE;
+        F_DEHUMID = DISABLE;
+      }else{
+        F_HUMID = DISABLE;
+      }
+      if (sdehumidifier_status = "ON"){
+        F_DEHUMID = ENABLE;
+        F_HUMID = DISABLE;
+      }else{
+        F_DEHUMID = DISABLE;
+      }
+      if (spump_status = "ON"){
+        F_MOIST = ENABLE;
+      }else{
+       F_MOIST = DISABLE;
+      }
+      if (slight_status = "ON"){
+        lightFlag = ENABLE;        
+      }else{
+        lightFlag = DISABLE;        
+      }
 
       // Free resources
       http.end();
@@ -247,135 +353,17 @@ void get_SQL_data(void *pvParam){
   }
 }
 
-void lightTask(void *pvParam){
-  (void) pvParam;
-  while(1){
-    light_control();
-    dtostrf(ledState,1,2,lightS);
-    if (digitalRead(LED) == HIGH){
-      light_status = "ON";
-    }else{
-      light_status = "OFF";
-    }
-    
-    vTaskDelay(1000);
-  }
-}
-
-
-//Temperature Control Procedure Call
-void temperatureTask(void *pvParam){
-  (void) pvParam;
-  while(1){    
-    if (F_HEATER){
-        heaterDutyCycle = 1;
-        heaterState = 1;
-        coolerState = 0;
-        digitalWrite(KIPAS_HEATER,HIGH);
-        digitalWrite(COOLER,LOW);
-        digitalWrite(KIPAS_COOLER,LOW);
-    }
-    else if (F_COOLER){
-        heaterDutyCycle = 0;
-        coolerState = 1;
-        heaterState = 0;
-        digitalWrite(KIPAS_HEATER,LOW);
-        digitalWrite(COOLER,HIGH);
-        digitalWrite(KIPAS_COOLER,HIGH);
-    }
-    else{
-        temperature_control();
-    }
-    dimmer.setPower(heaterDutyCycle);
-    dtostrf(heaterState,1,2,heaterS);
-    dtostrf(coolerState,1,2,coolerS);
-    if (digitalRead(KIPAS_HEATER) == HIGH){
-      heater_status = "ON";
-    }else{
-      heater_status = "OFF";
-    }
-    if (digitalRead(COOLER) == HIGH){
-      cooler_status = "ON";
-    }else{
-      cooler_status = "OFF";
-    }
-    
-    vTaskDelay(2500);
-  }
-}
-
-//Humidity Control Procedure Call
-void humidityTask(void *pvParam){
-  (void) pvParam;
-  while(1){
-       if (F_HUMID){
-        humidifierState = 1;
-        dehumidifierState = 0;
-        digitalWrite(HUMIDIFIER,HIGH);
-        digitalWrite(DEHUMIDIFIER,LOW);
-        digitalWrite(KIPAS_DEHUMIDIFIER,LOW);
-    }
-    else if (F_DEHUMID){
-        humidifierState = 0;
-        dehumidifierState = 1;
-        digitalWrite(HUMIDIFIER,LOW);
-        digitalWrite(DEHUMIDIFIER,HIGH);
-        digitalWrite(KIPAS_DEHUMIDIFIER,HIGH);
-    }
-    else{
-        humidity_control();
-    }
-    
-    dtostrf(humidifierState,1,2,humidS);
-    dtostrf(dehumidifierState,1,2,dehumidS);
-    
-    if (digitalRead(HUMIDIFIER) == HIGH){
-      humid_status = "ON";
-    }else{
-      humid_status = "OFF";
-    }
-    if (digitalRead(DEHUMIDIFIER) == HIGH){
-      dehumid_status = "ON";
-    }else{
-      dehumid_status = "OFF";
-    }
-    vTaskDelay(2500);
-  }
-}
-
-void moistureTask(void *pvParam){
-  (void) pvParam;
-  while(1){
-    if (F_MOIST){
-        pumpState = 1;
-        digitalWrite(MICROPUMP,HIGH);
-    }
-    else{
-        moisture_control();
-    }    
-    
-    dtostrf(pumpState,1,2,pumpS);
-    
-    if (digitalRead(MICROPUMP) == HIGH){
-      pump_status = "ON";
-    }else{
-      pump_status = "OFF";
-    }
-    vTaskDelay(2000);
-  }
-}
 
 void print_status(void *pvParam){
   (void) pvParam;
   while(1){
-   
     // for checking actuator status
-    Serial.println("Heater Status : " + heater_status); 
-    Serial.println("Cooler Status : " + cooler_status); 
-    Serial.println("Humidifier Status : " + humid_status); 
-    Serial.println("Dehumidifier Status : " + dehumid_status); 
-    Serial.println("Pump Status : " + pump_status); 
-    Serial.println("Light Status : " + light_status); 
+    Serial.println("Heater Status : " + sheater_status); 
+    Serial.println("Cooler Status : " + scooler_status); 
+    Serial.println("Humidifier Status : " + shumidifier_status); 
+    Serial.println("Dehumidifier Status : " + sdehumidifier_status); 
+    Serial.println("Pump Status : " + spump_status); 
+    Serial.println("Light Status : " + slight_status); 
     Serial.println("-----------------");
     Serial.print("ActTemp = ");
     Serial.println(fActTemp);
@@ -395,8 +383,120 @@ void print_status(void *pvParam){
     Serial.print("OptLight = ");
     Serial.println(fOptLight);
     Serial.println("-----------------");
+
+    if(WiFi.status()== WL_CONNECTED){
+      HTTPClient http;
+      http.begin(server_toSQL);
+      http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+      String httpRequestData = "api_key=" + apiKeyValue
+                          + "&heater=" + heaterState
+                          + "&cooler=" + coolerState
+                          + "&humidifier=" + humidifierState
+                          + "&dehumidifier=" + dehumidifierState
+                          + "&pump=" + pumpState
+                          + "&light=" + ledState + "";
+      Serial.print("httpRequestData: ");
+      Serial.println(httpRequestData);
+
+      // Send HTTP POST request
+      int httpResponseCode = http.POST(httpRequestData);
+        
+      if (httpResponseCode>0) {
+        Serial.print("HTTP Response code: ");
+        Serial.println(httpResponseCode);
+      }
+      else {
+        Serial.print("Error code: ");
+        Serial.println(httpResponseCode);
+      }
+      // Free resources
+      http.end();
+    }
     
     vTaskDelay(3000);
+  }
+}
+
+
+void lightTask(void *pvParam){
+  (void) pvParam;
+  while(1){
+    light_control();
+    
+    vTaskDelay(1000);
+  }
+}
+
+
+//Temperature Control Procedure Call
+void temperatureTask(void *pvParam){
+  (void) pvParam;
+  while(1){    
+    if (F_HEATER){
+        heaterDutyCycle = 1;
+        heaterState = 1;
+        coolerState = 0;
+        digitalWrite(KIPAS_HEATER,HIGH);
+        digitalWrite(COOLER,LOW);
+        ledcWrite(ledChannel, min_dutyCycle);
+//        digitalWrite(KIPAS_COOLER,LOW);
+    }
+    else if (F_COOLER){
+        heaterDutyCycle = 0;
+        coolerState = 1;
+        heaterState = 0;
+        digitalWrite(KIPAS_HEATER,LOW);
+        digitalWrite(COOLER,HIGH);
+//        digitalWrite(KIPAS_COOLER,HIGH);
+        ledcWrite(ledChannel, max_dutyCycle);
+    }
+    else{
+        temperature_control();
+    }
+    dimmer.setPower(heaterDutyCycle);
+    
+    vTaskDelay(2500);
+  }
+}
+
+//Humidity Control Procedure Call
+void humidityTask(void *pvParam){
+  (void) pvParam;
+  while(1){
+    if (F_HUMID){
+        humidifierState = 1;
+        dehumidifierState = 0;
+        digitalWrite(HUMIDIFIER,HIGH);
+        digitalWrite(DEHUMIDIFIER,LOW);
+        digitalWrite(KIPAS_DEHUMIDIFIER,LOW);
+    }
+    else if (F_DEHUMID){
+        humidifierState = 0;
+        dehumidifierState = 1;
+        digitalWrite(HUMIDIFIER,LOW);
+        digitalWrite(DEHUMIDIFIER,HIGH);
+        digitalWrite(KIPAS_DEHUMIDIFIER,HIGH);
+    }
+    else{
+        humidity_control();
+    }
+    
+    vTaskDelay(2500);
+  }
+}
+
+void moistureTask(void *pvParam){
+  (void) pvParam;
+  while(1){
+    if (F_MOIST){
+        pumpState = 1;
+        digitalWrite(MICROPUMP,HIGH);
+    }
+    else{
+        moisture_control();
+    }       
+
+    vTaskDelay(2000);
   }
 }
 
@@ -408,7 +508,8 @@ void temperature_control(){
         heaterState = 1;
         digitalWrite(KIPAS_HEATER,HIGH);
         digitalWrite(COOLER,LOW);
-        digitalWrite(KIPAS_COOLER,LOW);
+//        digitalWrite(KIPAS_COOLER,LOW);
+        ledcWrite(ledChannel, min_dutyCycle);
         if (fActTemp >= fOptTemp) {
           tempState = WAIT_TEMP;
         }
@@ -419,7 +520,8 @@ void temperature_control(){
         heaterState = 0;
         digitalWrite(KIPAS_HEATER,LOW);
         digitalWrite(COOLER,LOW);
-        digitalWrite(KIPAS_COOLER,LOW);
+//        digitalWrite(KIPAS_COOLER,LOW);
+        ledcWrite(ledChannel, min_dutyCycle);
         if((fOptTemp - fActTemp)>= TEMP_THRESHOLD){
           tempState = HEAT;
         }
@@ -433,7 +535,8 @@ void temperature_control(){
         heaterState = 0;
         digitalWrite(KIPAS_HEATER,LOW);
         digitalWrite(COOLER,HIGH);
-        digitalWrite(KIPAS_COOLER,HIGH);
+//        digitalWrite(KIPAS_COOLER,HIGH);
+        ledcWrite(ledChannel, max_dutyCycle);
         if (fActTemp <= fOptTemp){
           tempState = WAIT_TEMP;
         }
