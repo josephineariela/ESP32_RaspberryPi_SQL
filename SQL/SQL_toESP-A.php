@@ -22,10 +22,10 @@ if ($conn->connect_error) {
 
 
 //Ambil data dari tabel ActualData
-$sql = "SELECT id, temp, hum, moist, light, reading_time FROM ActualData ORDER BY id DESC";
+$sqlAct = "SELECT id, temp, hum, moist, light, reading_time FROM ActualData ORDER BY id DESC";
 
 
-if ($result = $conn->query($sql)) {
+if ($result = $conn->query($sqlAct)) {
     if($row = $result->fetch_assoc()) {
             $ActTemp = $row["temp"];
             $ActHum = $row["hum"];
@@ -43,27 +43,56 @@ if ($result = $conn->query($sql)) {
     $result->free();
 }
 
+//Ambil data dari tabel OptimumData
+$sqlOpt = "SELECT id, temp, hum, moist, light, reading_time FROM OptimumData ORDER BY id DESC";
+
+
+if ($result = $conn->query($sqlOpt)) {
+    if($row = $result->fetch_assoc()) {
+            $OptTemp = $row["temp"];
+            $OptHum = $row["hum"];
+            $OptMoist = $row["moist"];
+            $OptLight = $row["light"];
+            echo $OptTemp;
+            echo "a";
+            echo $OptHum;
+            echo "b";
+            echo $OptMoist;
+            echo "c";
+            echo $OptLight;
+            echo "d";
+    }
+    $result->free();
+}
+
 // //Ambil data dari tabel OptimumData
-// $sql = "SELECT id, temp, hum, moist, light, reading_time FROM OptimumData ORDER BY id DESC";
+// $sqlMan = "SELECT id, heater, cooler, humidifier, dehumidifier, pump, light, reading_time FROM ManualData ORDER BY id DESC";
 
 
-// if ($result = $conn->query($sql)) {
+// if ($result = $conn->query($sqlMan)) {
 //     if($row = $result->fetch_assoc()) {
-//             $OptTemp = $row["temp"];
-//             $OptHum = $row["hum"];
-//             $OptMoist = $row["moist"];
-//             $OptLight = $row["light"];
-//             echo $OptTemp;
-//             echo "v";
-//             echo $OptHum;
-//             echo "w";
-//             echo $OptMoist;
-//             echo "x";
-//             echo $OptLight;
-//             echo "y";
+//             $heater = $row["heater"];
+//             $cooler = $row["cooler"];
+//             $humidifier = $row["humidifier"];
+//             $dehumidifier = $row["dehumidifier"];
+//             $pump = $row["pump"];
+//             $light = $row["light"];
+//             echo $heater;
+//             echo "g";
+//             echo $cooler;
+//             echo "h";
+//             echo $humidifier;
+//             echo "i";
+//             echo $dehumidifier;
+//             echo "j";
+//             echo $pump;
+//             echo "k";
+//             echo $light;
+//             echo "l";
 //     }
 //     $result->free();
 // }
+
 
 $conn->close();
 
