@@ -2,16 +2,13 @@
 /*Program to send data from SQL Database to ESP-A
 Created by: Josephine Ariella*/
 
-$api_key_value = "tPmAT5Ab3j7F9";
-
-$servername = "localhost";
 
 //PHPmyAdmin Initialization
 $servername = "localhost";
 $dbname = "Growth_Chamber";
 $username = "root";
 $password = "raspberry";
-$api_key_value = "192001003";
+$api_key_value = "tPmAT5Ab3j7F9";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
