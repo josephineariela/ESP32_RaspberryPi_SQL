@@ -345,54 +345,54 @@ void print_status(void *pvParam){
   (void) pvParam;
   while(1){
     // for checking actuator status
-//    Serial.print("ActTemp = ");
-//    Serial.println(fActTemp);
-//    Serial.print("ActHum = ");
-//    Serial.println(fActHum);
-//    Serial.print("ActMoist1 = ");
-//    Serial.println(fActMoist1);    
-//    Serial.print("ActMoist2 = ");
-//    Serial.println(fActMoist2);   
-//    Serial.print("ActMoist3 = ");
-//    Serial.println(fActMoist3);   
-//    Serial.print("ActMoist4 = ");
-//    Serial.println(fActMoist4);   
-//    Serial.print("ActMoist5 = ");
-//    Serial.println(fActMoist5);
-//    Serial.print("ActMoist6 = ");
-//    Serial.println(fActMoist6);        
-//    Serial.print("ActLight = ");
-//    Serial.println(fActLight);
-//    Serial.println("-----------------");
-//    Serial.print("OptTemp = ");
-//    Serial.println(fOptTemp);
-//    Serial.print("OptHum = ");
-//    Serial.println(fOptHum);
-//    Serial.print("OptMoist = ");
-//    Serial.println(fOptMoist);      
-//    Serial.print("OptLight = ");
-//    Serial.println(fOptLight);
-//    Serial.println("-----------------");
-//    Serial.print("Heater Dutycycle = ");
-//    Serial.println(heater_dutyCycle);
-//    Serial.print("Dimmer Dutycycle = ");
-//    Serial.println(dimmer_dutyCycle);
-//    Serial.print("Cooler Dutycycle = ");
-//    Serial.println(cooler_dutyCycle);
-//    if (error_cooler > 0){
-//      Serial.println("Peltier DutyCycle = 100");
-//    }else if (error_cooler <=0){
-//      Serial.println("Peltier DutyCycle = 0");
-//    }
-//    Serial.print("Humidifier Dutycycle = ");
-//    Serial.println(humidifier_dutyCycle);
-//    Serial.print("Dehumidifier Dutycycle = ");
-//    Serial.println(dehumidifier_dutyCycle);
-//    if(error_pump > 0){
-//      Serial.println("Pump status = ON");
-//    }else{
-//      Serial.println("Pump status = OFF");
-//    }
+   Serial.print("ActTemp = ");
+   Serial.println(fActTemp);
+   Serial.print("ActHum = ");
+   Serial.println(fActHum);
+   Serial.print("ActMoist1 = ");
+   Serial.println(fActMoist1);    
+   Serial.print("ActMoist2 = ");
+   Serial.println(fActMoist2);   
+   Serial.print("ActMoist3 = ");
+   Serial.println(fActMoist3);   
+   Serial.print("ActMoist4 = ");
+   Serial.println(fActMoist4);   
+   Serial.print("ActMoist5 = ");
+   Serial.println(fActMoist5);
+   Serial.print("ActMoist6 = ");
+   Serial.println(fActMoist6);        
+   Serial.print("ActLight = ");
+   Serial.println(fActLight);
+   Serial.println("-----------------");
+   Serial.print("OptTemp = ");
+   Serial.println(fOptTemp);
+   Serial.print("OptHum = ");
+   Serial.println(fOptHum);
+   Serial.print("OptMoist = ");
+   Serial.println(fOptMoist);      
+   Serial.print("OptLight = ");
+   Serial.println(fOptLight);
+   Serial.println("-----------------");
+   Serial.print("Heater Dutycycle = ");
+   Serial.println(heater_dutyCycle);
+   Serial.print("Dimmer Dutycycle = ");
+   Serial.println(dimmer_dutyCycle);
+   Serial.print("Cooler Dutycycle = ");
+   Serial.println(cooler_dutyCycle);
+   if (error_cooler > 0){
+     Serial.println("Peltier DutyCycle = 100");
+   }else if (error_cooler <=0){
+     Serial.println("Peltier DutyCycle = 0");
+   }
+   Serial.print("Humidifier Dutycycle = ");
+   Serial.println(humidifier_dutyCycle);
+   Serial.print("Dehumidifier Dutycycle = ");
+   Serial.println(dehumidifier_dutyCycle);
+   if(error_pump > 0){
+     Serial.println("Pump status = ON");
+   }else{
+     Serial.println("Pump status = OFF");
+   }
     if(led_dutycycle == 180){
       Serial.println("LED status = MORNING");
     }else if(led_dutycycle == 255){
