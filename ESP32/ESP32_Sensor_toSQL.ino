@@ -1,12 +1,6 @@
 /*Program for ESP-S
 Created by: Josephine Ariella*/
 
-/*Update:
- * Udah bisa kirim data ke lokal & online
- * udah dituning soil moisture sensor
- * Sensor SHT31 ada 2
- */
-
 /*Global Library*/
 #include <WiFi.h>
 #include <HTTPClient.h>
